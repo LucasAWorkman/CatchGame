@@ -1,0 +1,25 @@
+import pygame, simpleGE
+
+
+class Sprite(simpleGE.Sprite):
+    def __init__(self, scene):
+        super().__init__(scene)
+        self.setImage("Yuji.png")
+        self.setSize(125,125)
+        self.position = (320,400)
+        
+
+
+class Game(simpleGE.Scene):
+    def __init__(self):
+        super().__init__()
+        self.setImage("Shibuya.png")
+        self.yuji = Sprite(self)
+        self.sprites = [self.yuji]
+        
+def main():
+    game = Game()
+    game.start()
+    
+if __name__ == "__main__":
+    main()
