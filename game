@@ -1,8 +1,6 @@
 import pygame, simpleGE, random
 
 
-# week 1 draft, have my sprites and movement, looked at some of andys code to help with the module, next week ill have my fully original code
-
 class Finger(simpleGE.Sprite):
     def __init__(self,scene):
         super().__init__(scene)
@@ -39,19 +37,140 @@ class Yuji(simpleGE.Sprite):
             self.x += self.moveSpeed
         
 
+class lblScore(simpleGE.Label):
+    def __init__(self):
+        super().__init__()
+        
+        self.center = (540,40)
+        self.text = "Score: "
+        
+        
+class lblTimer(simpleGE.Label):
+    def __init__(self):
+        super().__init__()
+        
+        self.center = (100,40)
+        self.text = "Time Left: "
+        
+class lblLastScore(simpleGE.Label):
+    def __init__(self):
+        super().__init__()
+        
+        self.center = (335,360)
+        self.text = ""
+
+class Instructions(simpleGE.Scene):
+    def __init__(self, score):
+        super().__init__()
+        
+        self.score = score
+        
+        print(self.score)
+        
+        self.setImage("Shibuya.png")
+        
+        self.response = "Quit"
+        
+        # to fix later
+        self.instrlbl = simpleGE.MultiLabel()
+        self.instrlbl.textLines = [
+            "move with a and d ",
+            "or left and right arrow",
+            "catch as many fingers as",
+            "you can in 15 seconds"
+        ]
+        
+        self.instrlbl.center = (320,200)
+        self.instrlbl.size = (400,250)
+        
+        self.btnPlay = simpleGE.Button()
+        self.btnPlay.center = (140,360)
+        self.btnPlay.text = "Play"
+        
+        self.btnQuit = simpleGE.Button()
+        self.btnQuit.center = (520,360)
+        self.btnQuit.text = "Quit"
+        
+        self.lastscore = lblLastScore()
+        
+        self.lastscore.text = f"last score: {self.score}"
+        
+        self.sprites = [self.instrlbl,
+                        self.btnPlay,
+                        self.btnQuit,
+                        self.lastscore
+                        ]
+                
+    def process(self):
+        if self.btnPlay.clicked:
+            self.reponse = "Play"
+            game = Game()
+            game.start()
+            self.stop()
+        
+        if self.btnQuit.clicked:
+            self.reponse = "Quit"
+            self.stop()
+            
+        
+        
+
 
 class Game(simpleGE.Scene):
     def __init__(self):
         super().__init__()
+        
+        self.score = 0
+        
         self.setImage("Shibuya.png")
         self.yuji = Yuji(self)
         self.finger = Finger(self)
-        self.sprites = [self.yuji,
-                        self.finger]
+        self.lblscore = lblScore()
+        self.lbltime = lblTimer()
         
+        self.timer = simpleGE.Timer()
+        self.timer.totalTime = 15
+        self.lbltime = lblTimer()
+        
+
+        
+        self.fingers = []
+        
+        for i in range(8):
+            self.fingers.append(Finger(self))
+       
+        self.sprites = [self.yuji,
+                        self.fingers,
+                        self.lblscore,
+                        self.lbltime
+                        ]
+    def process(self):
+        for finger in self.fingers:
+            if self.yuji.collidesWith(finger):
+                finger.top()
+                self.score += 1
+                self.lblscore.text = f"Score: {self.score}"
+            
+        self.lbltime.text = f"time left: {self.timer.getTimeLeft():.1f}"
+        
+        if self.timer.getTimeLeft() <= 0:
+            self.stop()
+            score = self.score
+            print(score)
+            intruct = Instructions(score)
+            intruct.start()
 def main():
-    game = Game()
-    game.start()
+    
+    keepGoing = True
+    score = 0
+    while keepGoing:
+        instructions = Instructions(score)
+        instructions.start()
+        if instructions.response == "Play":
+            game = Game()
+            game.start()
+        else:
+            keepGoing = False
     
 if __name__ == "__main__":
     main()
